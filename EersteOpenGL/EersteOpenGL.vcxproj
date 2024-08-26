@@ -108,12 +108,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\vclib\glm;C:\vclib\glew-2.1.0\include\GL;C:\Users\Samuel\Documents\vclib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL;C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL\include;C:\vclib\glm;C:\vclib\glew-2.1.0\include\GL;C:\Users\Samuel\Documents\vclib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\vclib\glew-2.1.0\lib\Release\x64;C:\Users\Samuel\Documents\vclib\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL\include;C:\vclib\glew-2.1.0\lib\Release\x64;C:\Users\Samuel\Documents\vclib\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;SDL2.lib;SDL2main.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -137,10 +137,17 @@
     <ClCompile Include="main.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\vclib\glew-2.1.0\include;C:\Users\Samuel\Documents\vclib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ClCompile Include="include\Camera.cpp">
+      <UseFullPaths Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</UseFullPaths>
+      <IgnoreStandardIncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IgnoreStandardIncludePath>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.glsl" />
     <None Include="shaders\vert.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Camera.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
