@@ -16,9 +16,9 @@ public:
 
 private:
     float x, y, z;
-    float r = 0.5f;
-    float g = 0.5f;
-    float b = 0.5f; //default color grijs CHANGE TO RANDOM COLOR PER VERTEX
+    //GLfloat r = (GLfloat)(rand()) / (GLfloat)(RAND_MAX);
+    //GLfloat g = (GLfloat)(rand()) / (GLfloat)(RAND_MAX);
+    //GLfloat b = (GLfloat)(rand()) / (GLfloat)(RAND_MAX); //default color grijs CHANGE TO RANDOM COLOR PER VERTEX
 
     int i1, i2, i3; //indexBuffer: vertices making up a triangle
     int t1, t2, t3; //indexBuffer: texture

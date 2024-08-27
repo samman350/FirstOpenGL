@@ -56,7 +56,7 @@ struct Mesh3D {
 App gApp;
 Mesh3D gMesh1;
 Mesh3D gMesh2;
-//ObjFile gObject;
+Model* gTestModel = new Model("C:/Users/Samuel/Documents/bebson.obj"); // define on heap, bcuz possibly big
 
 void GetOpenGLVersionInfo() {
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
@@ -128,17 +128,15 @@ void InitializeProgram(App* app) {
 // set up geometry per mesh, en pipeline te gebruiken voor de mesh:
 void MeshCreate(Mesh3D* mesh) {
 
-    Model* TestModel = new Model("C:/Users/Samuel/Documents/cube.obj"); // define on heap, bcuz possibly big
-
-    int i;
-    std::cout << "index data:" << std::endl;
-    for (i = 0; i < 36; i++) {
-        std::cout << TestModel->mIndexBufferData[i] << std::endl;
-    }
-    std::cout << "VertexData:" << std::endl;
-    for (i = 0; i < 48; i++) {
-        std::cout << TestModel->mVertexData[i] << std::endl;
-    }
+    
+    //std::cout << "index data:" << std::endl;
+    //for (int i = 0; i < gTestModel->mIndexBufferData.size(); i++) {
+    //    std::cout << gTestModel->mIndexBufferData[i] << std::endl;
+    //}
+    //std::cout << "VertexData:" << std::endl;
+    //for (int i = 0; i < gTestModel->mVertexData.size(); i++) {
+    //    std::cout << gTestModel->mVertexData[i] << std::endl;
+    //}
     //const std::vector<GLfloat> vertexData{
     //    -0.5f, -0.5f, 0.0f,   // lower left
     //    1.0f, 0.0f, 0.0f,
@@ -157,14 +155,14 @@ void MeshCreate(Mesh3D* mesh) {
     // start met genereren van Vertex Buffer Object 
     glGenBuffers(1, &mesh->mVertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->mVertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, TestModel->mVertexData.size() * sizeof(GLfloat), TestModel->mVertexData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), vertexData.data(), GL_STATIC_DRAW);
 
     //const std::vector<GLuint> indexBufferData{ 0, 1, 2, 3, 2, 1 }; // CCW orientatie
 
     glGenBuffers(1, &mesh->mIndexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, TestModel->mIndexBufferData.size() * sizeof(GLuint), TestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)0);
@@ -208,7 +206,7 @@ int FindUniformLocation(GLuint pipeline, const GLchar* name){      // deze funct
     return location;
 }
 
-void MeshDraw(Mesh3D* mesh) {
+void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
 
     glUseProgram(mesh->mPipeline);
 
@@ -233,12 +231,12 @@ void MeshDraw(Mesh3D* mesh) {
     
     // TIME AS UNIFORM
 
-    float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
-    GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
-    glUniform1f(location_Time, timeVal);
+    //float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
+    //GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
+    //glUniform1f(location_Time, timeVal);
 
     glBindVertexArray(mesh->mVertexArrayObject); // select/enable VAO
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draw that shit
+    glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw that shit
 
     glUseProgram(0);
 }
@@ -368,7 +366,7 @@ void MainLoop() {
         //MeshRotate(&gMesh1, rotate, glm::vec3{ 0.f,1.f,0.f });
         //MeshRotate(&gMesh2, -rotate, glm::vec3{ 0.f,1.f,0.f });
 
-        MeshDraw(&gMesh1);
+        MeshDraw(&gMesh1, gTestModel->mIndexBufferData.size());
 
         //MeshDraw(&gMesh2);
 
@@ -384,6 +382,8 @@ void CleanUp() {
     glDeleteVertexArrays(1, &gMesh1.mVertexArrayObject);
 
     glDeleteProgram(gApp.mGraphicsPipelineShaderProgram);
+
+    delete gTestModel;
 
     SDL_Quit();
 }

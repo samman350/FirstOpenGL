@@ -6,7 +6,7 @@ layout(location = 1) in vec3 vertexColors;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
-uniform float u_Time;
+//uniform float u_Time;
 
 out vec3 v_vertexColors;
 

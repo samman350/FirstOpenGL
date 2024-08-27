@@ -14,9 +14,13 @@ Model::Model(const std::string filename) {
                 mVertexData.push_back((GLfloat)x);
                 mVertexData.push_back((GLfloat)y);// zelde als matlab a = [a y];
                 mVertexData.push_back((GLfloat)z);
-                mVertexData.push_back((GLfloat)r);
-                mVertexData.push_back((GLfloat)g);
-                mVertexData.push_back((GLfloat)b);
+                
+                mVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX)); 
+                mVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX));
+                mVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX));
+                //mVertexData.push_back((GLfloat)r);
+                //mVertexData.push_back((GLfloat)g);
+                //mVertexData.push_back((GLfloat)b);
             }
             else if (line.substr(0, 2) == "f ") {
                 sscanf_s(line.c_str(), "%c %d/%d/%d %d/%d/%d %d/%d/%d", &token, 1, &i1, &t1, &n1,
@@ -28,5 +32,11 @@ Model::Model(const std::string filename) {
             }
         }
     myFile.close();
+    }
+    if (mVertexData.size() != 0) {
+        std::cout << filename << " loaded!" << std::endl;
+    }
+    else if (mVertexData.size() == 0) {
+        std::cout << "obj model not loaded!" << std::endl;
     }
 }
