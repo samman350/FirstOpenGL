@@ -16,6 +16,7 @@
 
 // onze eigen biliotheken
 #include "Camera.hpp"
+#include "Model.hpp"
 
 // reminder Blender exprts obj w CW winding!
 
@@ -45,17 +46,17 @@ struct Mesh3D {
     float           m_uScale = 1.f;
 };
 
-struct ObjFile {
-    std::vector<GLfloat> mVertexData;
-    std::vector<GLuint> mIndexBufferData;
-    const std::string mFilename = "C:/Users/Samuel/Documents/cube.obj";
-};
+//struct ObjFile {
+//    std::vector<GLfloat> mVertexData;
+//    std::vector<GLuint> mIndexBufferData;
+//    const std::string mFilename = "C:/Users/Samuel/Documents/cube.obj";
+//};
 
 //  Globalz
 App gApp;
 Mesh3D gMesh1;
 Mesh3D gMesh2;
-ObjFile gObject;
+//ObjFile gObject;
 
 void GetOpenGLVersionInfo() {
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
@@ -123,61 +124,20 @@ void InitializeProgram(App* app) {
     GetOpenGLVersionInfo();
 }
 
-void MeshLoad(ObjFile* objfile) {
-
-    float x, y, z;
-    float r = 0.5f;
-    float g = 0.5f;
-    float b = 0.5f; //default color grijs
-
-    int i1, i2, i3; //indexBuffer: vertices making up a triangle
-    int t1, t2, t3; //indexBuffer: texture
-    int n1, n2, n3; //indexBuffer: normals of a triangle
-
-    char token;
-
-    std::string line = "";
-    std::ifstream myFile(objfile->mFilename);
-
-    if (myFile.is_open()) {
-        while (std::getline(myFile, line)) {
-            if (line.substr(0, 2) == "v ") {
-                sscanf_s(line.c_str(), "%c %f %f %f", &token, 1, &x, &y, &z);
-                objfile->mVertexData.push_back((GLfloat)x);
-                objfile->mVertexData.push_back((GLfloat)y);// zelde als matlab a = [a y];
-                objfile->mVertexData.push_back((GLfloat)z);
-                objfile->mVertexData.push_back((GLfloat)r);
-                objfile->mVertexData.push_back((GLfloat)g);
-                objfile->mVertexData.push_back((GLfloat)b);
-            }
-            else if (line.substr(0, 2) == "f ") {
-                sscanf_s(line.c_str(), "%c %d/%d/%d %d/%d/%d %d/%d/%d", &token, 1, &i1, &t1, &n1,
-                                                                            &i2, &t2, &n2,
-                                                                            &i3, &t3, &n3);
-                objfile->mIndexBufferData.push_back((GLuint)i1-1);
-                objfile->mIndexBufferData.push_back((GLuint)i2-1);
-                objfile->mIndexBufferData.push_back((GLuint)i3-1);
-            }
-        }
-        myFile.close();
-    }
-}
-
 // Effectief is dit onze constructor:
 // set up geometry per mesh, en pipeline te gebruiken voor de mesh:
 void MeshCreate(Mesh3D* mesh) {
 
-    MeshLoad(&gObject);
-
+    Model* TestModel = new Model("C:/Users/Samuel/Documents/cube.obj"); // define on heap, bcuz possibly big
 
     int i;
     std::cout << "index data:" << std::endl;
     for (i = 0; i < 36; i++) {
-        std::cout << gObject.mIndexBufferData[i] << std::endl;
+        std::cout << TestModel->mIndexBufferData[i] << std::endl;
     }
     std::cout << "VertexData:" << std::endl;
     for (i = 0; i < 48; i++) {
-        std::cout << gObject.mVertexData[i] << std::endl;
+        std::cout << TestModel->mVertexData[i] << std::endl;
     }
     //const std::vector<GLfloat> vertexData{
     //    -0.5f, -0.5f, 0.0f,   // lower left
@@ -197,14 +157,14 @@ void MeshCreate(Mesh3D* mesh) {
     // start met genereren van Vertex Buffer Object 
     glGenBuffers(1, &mesh->mVertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->mVertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, gObject.mVertexData.size() * sizeof(GLfloat), gObject.mVertexData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, TestModel->mVertexData.size() * sizeof(GLfloat), TestModel->mVertexData.data(), GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), vertexData.data(), GL_STATIC_DRAW);
 
     //const std::vector<GLuint> indexBufferData{ 0, 1, 2, 3, 2, 1 }; // CCW orientatie
 
     glGenBuffers(1, &mesh->mIndexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, gObject.mIndexBufferData.size() * sizeof(GLuint), gObject.mIndexBufferData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, TestModel->mIndexBufferData.size() * sizeof(GLuint), TestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)0);
