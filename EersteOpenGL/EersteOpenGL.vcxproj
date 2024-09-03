@@ -108,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL;C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL\include;C:\vclib\glm;C:\vclib\glew-2.1.0\include\GL;C:\Users\Samuel\Documents\vclib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Samuel\source\repos\EersteOpenGL\EersteOpenGL\include;C:\vclib\glm;C:\vclib\glew-2.1.0\include\GL;C:\Users\Samuel\Documents\vclib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

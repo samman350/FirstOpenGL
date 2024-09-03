@@ -15,6 +15,7 @@
 #include <string>
 
 // onze eigen biliotheken
+#include "stb_image.h"
 #include "Camera.hpp"
 #include "Model.hpp"
 
@@ -39,6 +40,7 @@ struct Mesh3D {
     GLuint          mVertexArrayObject = 0;
     GLuint          mVertexBufferObject = 0;
     GLuint          mIndexBufferObject = 0;
+    GLuint          mTextureObject = 0;
     GLuint          mPipeline = 0; // graphics pipeline die gebruikt wordt met dit mesh
     Transform       mTransform;
     float           m_uOffset = -4.f;
@@ -133,10 +135,11 @@ void MeshCreate(Mesh3D* mesh) {
     //for (int i = 0; i < gTestModel->mIndexBufferData.size(); i++) {
     //    std::cout << gTestModel->mIndexBufferData[i] << std::endl;
     //}
-    //std::cout << "VertexData:" << std::endl;
+    std::cout << "VertexData:" << std::endl;
     //for (int i = 0; i < gTestModel->mVertexData.size(); i++) {
-    //    std::cout << gTestModel->mVertexData[i] << std::endl;
-    //}
+    for (int i = 0; i < 8; i++) {
+        std::cout << gTestModel->mVertexData[i] << std::endl;
+    }
     //const std::vector<GLfloat> vertexData{
     //    -0.5f, -0.5f, 0.0f,   // lower left
     //    1.0f, 0.0f, 0.0f,
@@ -148,36 +151,58 @@ void MeshCreate(Mesh3D* mesh) {
     //    0.3f, 0.6f, 0.9f,
     //};
 
-    // We beginnen dingen op te zetten op de GPU
+    // De bind vertex array wrapped eigenlijk om alle andere data heen - vertex, index, en texture data
     glGenVertexArrays(1, &mesh->mVertexArrayObject); // mesh is een  pointer dus members worden als -> gegeven
     glBindVertexArray(mesh->mVertexArrayObject);
 
-    // start met genereren van Vertex Buffer Object 
+    // start met genereren van Vertex Buffer Object
+    
+    // VERTEX BUFFER 
     glGenBuffers(1, &mesh->mVertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->mVertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), vertexData.data(), GL_STATIC_DRAW);
 
     //const std::vector<GLuint> indexBufferData{ 0, 1, 2, 3, 2, 1 }; // CCW orientatie
-
+    
+    // INDEX BUFFER
     glGenBuffers(1, &mesh->mIndexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
+    // TEXTURE BUFFER
+    glGenTextures(1, &mesh->mTextureObject);
+    //glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mesh->mTextureObject);
+    if (gTestModel->data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, gTestModel->texWidth, gTestModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, gTestModel->data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "Texture loaded" << std::endl;
+    }
+    else {
+        std::cout << "no texture loaded" << std::endl;
+    }
+    stbi_image_free(gTestModel->data);
+
+    // Tell what is what in buffers, start with VERTICES
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
 
     //glGenBuffers(1, &gVertexBufferObject2);
     //glBindBuffer(GL_ARRAY_BUFFER, gVertexBufferObject2); // bind is iets als 'select', refereert naar de state machine
     //glBufferData(GL_ARRAY_BUFFER, vertexColors.size() * sizeof(GLfloat), vertexColors.data(), GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(1); // color info
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 3)); // hiermee vertel je de gpu hoe de buffer geinterpreteerd moet worden
+    glEnableVertexAttribArray(1); // COLORS
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3*sizeof(GLfloat))); // hiermee vertel je de gpu hoe de buffer geinterpreteerd moet worden
     //kleur zit 3 plaatsen opgeschoven vergeleken met xyz, daarom offset in laatste argument
+
+    glEnableVertexAttribArray(2); // TEXTURE COORDINATES
+    GLCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));) 
 
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
 }
 
 // hier definieren we de pijpleiding
@@ -212,16 +237,16 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
 
     mesh->m_uRotate += 0.01f;
 
-    // TRANSLATION, ROTATION AND SCALE MATRIX AS UNIFORM
-
-    GLint location_ModelMat = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_ModelMatrix"); 
-    glUniformMatrix4fv(location_ModelMat, 1, false, &mesh->mTransform.model[0][0]); // die laatste pointer wijst naar het eerste element van de matrix
-
     // VIEW MATRIX AS UNIFORM
 
     glm::mat4 view = gApp.mCamera.GetViewMatrix();
     GLint location_ViewMat = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_View");
     glUniformMatrix4fv(location_ViewMat, 1, false, &view[0][0]); // die laatste pointer wijst naar het eerste element van de matrix
+
+    // TRANSLATION, ROTATION AND SCALE MATRIX AS UNIFORM
+
+    GLint location_ModelMat = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_ModelMatrix"); 
+    glUniformMatrix4fv(location_ModelMat, 1, false, &mesh->mTransform.model[0][0]); // die laatste pointer wijst naar het eerste element van de matrix
     
     // PROJECTION MATRIX AS UNIFORM
 
@@ -234,6 +259,11 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
     //float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
     //GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
     //glUniform1f(location_Time, timeVal);
+
+    // TEXTURE AS UNIFORM
+    glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), mesh->mTextureObject);
+
+    // Draw stuff
 
     glBindVertexArray(mesh->mVertexArrayObject); // select/enable VAO
     glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw that shit
@@ -393,7 +423,7 @@ int main(int argc, char* argv[])
 {
     InitializeProgram(&gApp);
     //set up camera
-    gApp.mCamera.SetProjectionMatrix(glm::radians(45.0f),(float)gApp.mScreenWidth/ (float)gApp.mScreenHeight,0.1f,30.0f);
+    gApp.mCamera.SetProjectionMatrix(glm::radians(45.0f),(float)gApp.mScreenWidth/ (float)gApp.mScreenHeight,0.1f,100.0f);
 
     MeshCreate(&gMesh1);
 
