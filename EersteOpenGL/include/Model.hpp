@@ -11,9 +11,9 @@
 class Model {
 public:
 	std::vector<GLfloat> mVertexData;
-	std::vector<GLuint> mIndexBufferData;
+	//std::vector<GLuint> mIndexBufferData;
 
-    int texWidth, texHeight, texNrChannels;
+    GLsizei texWidth, texHeight, texNrChannels;
     unsigned char* data; // texture image data
 
 	Model(const std::string filename);

@@ -40,7 +40,7 @@ struct Mesh3D {
     GLuint          mVertexArrayObject = 0;
     GLuint          mVertexBufferObject = 0;
     GLuint          mIndexBufferObject = 0;
-    GLuint          mTextureObject = 0;
+    GLuint          mTextureObject;
     GLuint          mPipeline = 0; // graphics pipeline die gebruikt wordt met dit mesh
     Transform       mTransform;
     float           m_uOffset = -4.f;
@@ -150,6 +150,15 @@ void MeshCreate(Mesh3D* mesh) {
     //    0.5f, 0.5f, 0.0f,  // top right
     //    0.3f, 0.6f, 0.9f,
     //};
+        // positions          // colors           // texture coords
+    //const std::vector<GLfloat> vertexData{
+    //    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,    // top left 
+    //    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
+    //    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+    //    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,    // top left 
+    //    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+    //    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f   // top right
+    //};
 
     // De bind vertex array wrapped eigenlijk om alle andere data heen - vertex, index, en texture data
     glGenVertexArrays(1, &mesh->mVertexArrayObject); // mesh is een  pointer dus members worden als -> gegeven
@@ -160,22 +169,28 @@ void MeshCreate(Mesh3D* mesh) {
     // VERTEX BUFFER 
     glGenBuffers(1, &mesh->mVertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->mVertexBufferObject);
+    //glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), vertexData.data(), GL_STATIC_DRAW);
 
     //const std::vector<GLuint> indexBufferData{ 0, 1, 2, 3, 2, 1 }; // CCW orientatie
     
     // INDEX BUFFER
-    glGenBuffers(1, &mesh->mIndexBufferObject);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
+    //glGenBuffers(1, &mesh->mIndexBufferObject);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
     // TEXTURE BUFFER
+    std::cout << "texWidth: " << gTestModel->texWidth << ", texHeight: " << gTestModel->texHeight << ", texNrChannels: " << gTestModel->texNrChannels << std::endl;
     glGenTextures(1, &mesh->mTextureObject);
-    //glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mesh->mTextureObject);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if (gTestModel->data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, gTestModel->texWidth, gTestModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, gTestModel->data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, gTestModel->texWidth, gTestModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, gTestModel->data);
         glGenerateMipmap(GL_TEXTURE_2D);
         std::cout << "Texture loaded" << std::endl;
     }
@@ -197,7 +212,7 @@ void MeshCreate(Mesh3D* mesh) {
     //kleur zit 3 plaatsen opgeschoven vergeleken met xyz, daarom offset in laatste argument
 
     glEnableVertexAttribArray(2); // TEXTURE COORDINATES
-    GLCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));) 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6*sizeof(GLfloat))); 
 
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
@@ -261,12 +276,13 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
     //glUniform1f(location_Time, timeVal);
 
     // TEXTURE AS UNIFORM
-    glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), mesh->mTextureObject);
+    glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), 0);
 
     // Draw stuff
 
     glBindVertexArray(mesh->mVertexArrayObject); // select/enable VAO
-    glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw that shit
+    // glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw using vertexbuffer
+    glDrawArrays(GL_TRIANGLES, 0, vertexcount);
 
     glUseProgram(0);
 }
@@ -396,7 +412,9 @@ void MainLoop() {
         //MeshRotate(&gMesh1, rotate, glm::vec3{ 0.f,1.f,0.f });
         //MeshRotate(&gMesh2, -rotate, glm::vec3{ 0.f,1.f,0.f });
 
-        MeshDraw(&gMesh1, gTestModel->mIndexBufferData.size());
+        //MeshDraw(&gMesh1, gTestModel->mVertexData.size() / 8);
+        MeshDraw(&gMesh1, gTestModel->mVertexData.size() / 8);
+        //std::cout << "amount of vertices: " << gTestModel->mVertexAmount << std::endl;
 
         //MeshDraw(&gMesh2);
 

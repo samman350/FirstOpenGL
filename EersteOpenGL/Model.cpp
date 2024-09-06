@@ -50,33 +50,13 @@ Model::Model(const std::string filename) {
 
     // construeer de index buffer object en het vertex buffer object.
     // do this on the base of unique combinations f v/vt. If unique: new index and new entry in VBO (xyz rgb uv), 
-    // if not: push old index and do not update VBO.
-    
-    //first entry in VBO and IBO
-    mIndexBufferData.push_back(0);
-    mVertexData.push_back(mPreVertexData[0]);// vertices
-    mVertexData.push_back(mPreVertexData[1]);
-    mVertexData.push_back(mPreVertexData[2]);
-    mVertexData.push_back(mPreVertexData[3]);// color
-    mVertexData.push_back(mPreVertexData[4]);
-    mVertexData.push_back(mPreVertexData[5]);
-    mVertexData.push_back(mTextureData[0]);  // uv coordinates
-    mVertexData.push_back(mTextureData[1]);
+    // if not: push old index and do not update VBO. NO
+
+    // construeer alleen array (x y z | r g b | u v).
 
     std::cout << "nu ga ik de vertexArray en indexArray opzetten!" << std::endl;
 
-    for (int i = 1; i < mVertIndex.size(); i++){
-        unique = true;
-        for (int j = 0; j < i; j++) {
-            if ((mVertIndex[i] == mVertIndex[j]) && (mTexIndex[i] == mTexIndex[j])) { // if not unique 
-                mIndexBufferData.push_back(mIndexBufferData[j]);
-                unique = false;
-                break;
-            }
-        }
-        if (unique){
-        counter++;
-        mIndexBufferData.push_back(counter);
+    for (int i = 0; i < mVertIndex.size(); i++){
         mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6]);    // vertices
         mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 1]);
         mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 2]);
@@ -86,8 +66,9 @@ Model::Model(const std::string filename) {
         mVertexData.push_back(mTextureData[(mTexIndex[i]) * 2    ]);      // uv coordinates
         mVertexData.push_back(mTextureData[(mTexIndex[i]) * 2 + 1]);
         //std::cout << "counter: " << counter << std::endl;
-        }
     }
+
+    std::cout << "supposed amount of vertices: " << (mVertexData.size() / 8) * 3 << std::endl;
 
     if (mVertexData.size() != 0) {
         std::cout << filename << " loaded!" << std::endl;
@@ -97,6 +78,7 @@ Model::Model(const std::string filename) {
     }
 
     // load texture image:
+    stbi_set_flip_vertically_on_load(true);
     data = stbi_load("C:/Users/Samuel/Documents/bebson.jpg", &texWidth, &texHeight, &texNrChannels, 0); //FIX PATH!!
-    std::cout << "texWidth: " << texWidth << ", texHeight: " << texHeight << ", texNrChannels: " << texNrChannels << std::endl;
+    //std::cout << "texWidth: " << texWidth << ", texHeight: " << texHeight << ", texNrChannels: " << texNrChannels << std::endl;
 }
