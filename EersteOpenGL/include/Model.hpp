@@ -29,6 +29,8 @@ private:
     //GLfloat g = (GLfloat)(rand()) / (GLfloat)(RAND_MAX);
     //GLfloat b = (GLfloat)(rand()) / (GLfloat)(RAND_MAX); //default color grijs CHANGE TO RANDOM COLOR PER VERTEX
 
+    
+
     float u, v; //texture uv coordinates
     
     int i1, i2, i3; //indexBuffer: vertices making up a triangle

@@ -1,13 +1,17 @@
 #include "Model.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <string>
 
 // constructor voor Model class: laad het model, en vul mVertexData en mIndexBufferData met waarden.
 // later komen hier ook nog normals en texture coordinates bij.
 
 Model::Model(const std::string filename) {
     std::string line = "";
-    std::ifstream myFile(filename);  // TO DO: ERROR CHECK!
+    // std::basic_string<char> mObjExt = ".obj";
+    const std::string mObjExt = ".obj";
+    const std::string filenameObj = filename + mObjExt;
+    std::ifstream myFile(filenameObj);  // TO DO: ERROR CHECK!
     // Readout File, store stuff in private vectors
 
     std::cout << "nu ga ik de file lezen!" << std::endl;
@@ -42,7 +46,7 @@ Model::Model(const std::string filename) {
 
     // construeer alleen array (x y z | r g b | u v).
 
-    std::cout << "nu ga ik de vertexArray en indexArray opzetten!" << std::endl;
+    std::cout << "nu ga ik de vertexArray!" << std::endl;
 
     for (int i = 0; i < mVertIndex.size(); i++){
         mVertexData.insert(mVertexData.end(), { mPreVertexData[(mVertIndex[i]) * 6], mPreVertexData[(mVertIndex[i]) * 6 + 1],// vertices
@@ -61,7 +65,9 @@ Model::Model(const std::string filename) {
     }
 
     // load texture image:
+    const std::string mTexExt = ".jpg";
+    const std::string filenameTex = filename + mTexExt;
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("C:/Users/Samuel/Documents/bebson.jpg", &texWidth, &texHeight, &texNrChannels, 0); //FIX PATH!!
+    data = stbi_load(filenameTex.c_str(), &texWidth, &texHeight, &texNrChannels, 0);
     //std::cout << "texWidth: " << texWidth << ", texHeight: " << texHeight << ", texNrChannels: " << texNrChannels << std::endl;
 }

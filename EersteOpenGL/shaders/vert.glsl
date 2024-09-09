@@ -7,7 +7,7 @@ layout(location = 2) in vec2 texCoord;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
-uniform float u_Time;
+//uniform float u_Time;
 uniform sampler2D uTexture;
 
 out vec3 v_vertexColors;

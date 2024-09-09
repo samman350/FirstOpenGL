@@ -48,17 +48,13 @@ struct Mesh3D {
     float           m_uScale = 1.f;
 };
 
-//struct ObjFile {
-//    std::vector<GLfloat> mVertexData;
-//    std::vector<GLuint> mIndexBufferData;
-//    const std::string mFilename = "C:/Users/Samuel/Documents/cube.obj";
-//};
+std::string ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/Reptiel/3DModel_LowPoly";
 
 //  Globalz
 App gApp;
 Mesh3D gMesh1;
 Mesh3D gMesh2;
-Model* gTestModel = new Model("C:/Users/Samuel/Documents/bebson.obj"); // define on heap, bcuz possibly big
+Model* gTestModel = new Model(ObjPath); // define on heap, bcuz possibly big
 
 void GetOpenGLVersionInfo() {
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
@@ -151,14 +147,6 @@ void MeshCreate(Mesh3D* mesh) {
     //    0.3f, 0.6f, 0.9f,
     //};
         // positions          // colors           // texture coords
-    //const std::vector<GLfloat> vertexData{
-    //    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,    // top left 
-    //    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
-    //    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
-    //    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,    // top left 
-    //    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
-    //    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f   // top right
-    //};
 
     // De bind vertex array wrapped eigenlijk om alle andere data heen - vertex, index, en texture data
     glGenVertexArrays(1, &mesh->mVertexArrayObject); // mesh is een  pointer dus members worden als -> gegeven
@@ -271,9 +259,9 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
     
     // TIME AS UNIFORM
 
-    float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
-    GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
-    glUniform1f(location_Time, timeVal);
+    //float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
+    //GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
+    //glUniform1f(location_Time, timeVal);
 
     // TEXTURE AS UNIFORM
     glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), 0);
