@@ -48,7 +48,7 @@ struct Mesh3D {
     float           m_uScale = 1.f;
 };
 
-std::string ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/Reptiel/3DModel_LowPoly";
+std::string ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/CarlMiller3/3DModel_LowPoly";
 
 //  Globalz
 App gApp;
