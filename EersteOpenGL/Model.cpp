@@ -16,33 +16,21 @@ Model::Model(const std::string filename) {
         while (std::getline(myFile, line)) {
             if (line.substr(0, 2) == "v ") {
                 sscanf_s(line.c_str(), "%c %f %f %f", &token, 1, &x, &y, &z); // '1 ' is byte size of %c
-                mPreVertexData.push_back((GLfloat)x);
-                mPreVertexData.push_back((GLfloat)y);// zelde als matlab a = [a y];
-                mPreVertexData.push_back((GLfloat)z);
-                
-                mPreVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX)); // random colors :)
-                mPreVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX));
-                mPreVertexData.push_back((GLfloat)(rand()) / (GLfloat)(RAND_MAX));
-                //mVertexData.push_back((GLfloat)r);
-                //mVertexData.push_back((GLfloat)g);
-                //mVertexData.push_back((GLfloat)b);
+                mPreVertexData.insert(mPreVertexData.end(), { (GLfloat)x, (GLfloat)y, (GLfloat)z, // first xyz, then colors:
+                    (GLfloat)(rand()) / (GLfloat)(RAND_MAX) ,(GLfloat)(rand()) / (GLfloat)(RAND_MAX) ,(GLfloat)(rand()) / (GLfloat)(RAND_MAX) });
             }
             else if(line.substr(0,3) == "vt ") {
-                sscanf_s(line.c_str(), "%2s %f %f", &token2, (int)(sizeof(token2) / sizeof(token2[0])), &u, &v); // '1 ' is byte size of %2c
-                mTextureData.push_back((GLfloat)u);
-                mTextureData.push_back((GLfloat)v);
+                sscanf_s(line.c_str(), "%2s %f %f", &token2, (int)(sizeof(token2) / sizeof(token2[0])), &u, &v); // (int).. is byte size of %2s
+                mTextureData.insert(mTextureData.end(), { (GLfloat)u, (GLfloat)v });
             }
             else if (line.substr(0, 2) == "f ") {
                 sscanf_s(line.c_str(), "%c %d/%d/%d %d/%d/%d %d/%d/%d", &token, 1, &i1, &t1, &n1,
                     &i2, &t2, &n2,
                     &i3, &t3, &n3);
-                mVertIndex.push_back((GLuint)i1 - 1); // -1 vanwege zero indexing in c++ vergeleken met .obj 1 index
-                mVertIndex.push_back((GLuint)i2 - 1);
-                mVertIndex.push_back((GLuint)i3 - 1);
+                // face vertex indices
+                mVertIndex.insert(mVertIndex.end(), { (GLuint)i1 - 1 ,(GLuint)i2 - 1 ,(GLuint)i3 - 1 }); // -1 vanwege zero indexing in c++ vergeleken met .obj 1 index
                 // face texture indices:
-                mTexIndex.push_back((GLuint)t1 - 1);
-                mTexIndex.push_back((GLuint)t2 - 1);
-                mTexIndex.push_back((GLuint)t3 - 1);
+                mTexIndex.insert(mTexIndex.end(), { (GLuint)t1 - 1, (GLuint)t2 - 1, (GLuint)t3 - 1 });
             }
         }
     myFile.close();
@@ -57,15 +45,10 @@ Model::Model(const std::string filename) {
     std::cout << "nu ga ik de vertexArray en indexArray opzetten!" << std::endl;
 
     for (int i = 0; i < mVertIndex.size(); i++){
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6]);    // vertices
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 1]);
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 2]);
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 3]);// color
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 4]);
-        mVertexData.push_back(mPreVertexData[(mVertIndex[i]) * 6 + 5]);
-        mVertexData.push_back(mTextureData[(mTexIndex[i]) * 2    ]);      // uv coordinates
-        mVertexData.push_back(mTextureData[(mTexIndex[i]) * 2 + 1]);
-        //std::cout << "counter: " << counter << std::endl;
+        mVertexData.insert(mVertexData.end(), { mPreVertexData[(mVertIndex[i]) * 6], mPreVertexData[(mVertIndex[i]) * 6 + 1],// vertices
+                                            mPreVertexData[(mVertIndex[i]) * 6 + 2], mPreVertexData[(mVertIndex[i]) * 6 + 3],// color
+                                            mPreVertexData[(mVertIndex[i]) * 6 + 4], mPreVertexData[(mVertIndex[i]) * 6 + 5],
+                                               mTextureData[(mTexIndex[i]) * 2] ,  mTextureData[(mTexIndex[i]) * 2 + 1] }); // uv coordinates
     }
 
     std::cout << "supposed amount of vertices: " << (mVertexData.size() / 8) * 3 << std::endl;

@@ -271,9 +271,9 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
     
     // TIME AS UNIFORM
 
-    //float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
-    //GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
-    //glUniform1f(location_Time, timeVal);
+    float timeVal = (float)SDL_GetTicks(); // time in MILLIseconds
+    GLint location_Time = FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "u_Time");
+    glUniform1f(location_Time, timeVal);
 
     // TEXTURE AS UNIFORM
     glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), 0);
