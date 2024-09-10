@@ -46,15 +46,21 @@ struct Mesh3D {
     float           m_uOffset = -4.f;
     float           m_uRotate = 0.f;
     float           m_uScale = 1.f;
+    // load model on the heap, using smart pointer:
+    std::unique_ptr<Model> mModel; 
+    Mesh3D(const std::string& ObjPath){
+        mModel = std::make_unique<Model>(ObjPath);
+    } //destructor functie niet nodig vanwege smart pointer.
 };
 
-std::string ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/CarlMiller3/3DModel_LowPoly";
+//std::string     ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/Cabin/3DModel_LowPoly";
 
 //  Globalz
 App gApp;
-Mesh3D gMesh1;
-Mesh3D gMesh2;
-Model* gTestModel = new Model(ObjPath); // define on heap, bcuz possibly big
+Mesh3D gMesh1("C:/Users/Samuel/Dropbox/BlenderModels/Cabin/3DModel_LowPoly");
+//Mesh3D gMesh2;
+//Model* gTestModel = new Model(ObjPath); // define on heap, bcuz possibly big
+
 
 void GetOpenGLVersionInfo() {
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
@@ -81,7 +87,7 @@ static bool GLCheckErrorStatus(const char* function, int line) { // true if erro
 
 #define GLCheck(x) GLClearAllErrors(); x; GLCheckErrorStatus(#x,__LINE__); // wrap GLCheck() om een functie heen om te debuggen
 
-///END ERROR STUFF
+// END ERROR STUFF
 
 // INITIALIZE STUFF
 
@@ -126,15 +132,10 @@ void InitializeProgram(App* app) {
 // set up geometry per mesh, en pipeline te gebruiken voor de mesh:
 void MeshCreate(Mesh3D* mesh) {
 
-    
-    //std::cout << "index data:" << std::endl;
-    //for (int i = 0; i < gTestModel->mIndexBufferData.size(); i++) {
-    //    std::cout << gTestModel->mIndexBufferData[i] << std::endl;
-    //}
     std::cout << "VertexData:" << std::endl;
     //for (int i = 0; i < gTestModel->mVertexData.size(); i++) {
     for (int i = 0; i < 8; i++) {
-        std::cout << gTestModel->mVertexData[i] << std::endl;
+        std::cout << mesh->mModel->mVertexData[i] << std::endl;
     }
     //const std::vector<GLfloat> vertexData{
     //    -0.5f, -0.5f, 0.0f,   // lower left
@@ -158,7 +159,7 @@ void MeshCreate(Mesh3D* mesh) {
     glGenBuffers(1, &mesh->mVertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->mVertexBufferObject);
     //glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, gTestModel->mVertexData.size() * sizeof(GLfloat), gTestModel->mVertexData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh->mModel->mVertexData.size() * sizeof(GLfloat), mesh->mModel->mVertexData.data(), GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(GLfloat), vertexData.data(), GL_STATIC_DRAW);
 
     //const std::vector<GLuint> indexBufferData{ 0, 1, 2, 3, 2, 1 }; // CCW orientatie
@@ -169,7 +170,7 @@ void MeshCreate(Mesh3D* mesh) {
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
     // TEXTURE BUFFER
-    std::cout << "texWidth: " << gTestModel->texWidth << ", texHeight: " << gTestModel->texHeight << ", texNrChannels: " << gTestModel->texNrChannels << std::endl;
+    std::cout << "texWidth: " << mesh->mModel->texWidth << ", texHeight: " << mesh->mModel->texHeight << ", texNrChannels: " << mesh->mModel->texNrChannels << std::endl;
     glGenTextures(1, &mesh->mTextureObject);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mesh->mTextureObject);
@@ -177,15 +178,15 @@ void MeshCreate(Mesh3D* mesh) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if (gTestModel->data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, gTestModel->texWidth, gTestModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, gTestModel->data);
+    if (mesh->mModel->data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mesh->mModel->texWidth, mesh->mModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, mesh->mModel->data);
         glGenerateMipmap(GL_TEXTURE_2D);
         std::cout << "Texture loaded" << std::endl;
     }
     else {
         std::cout << "no texture loaded" << std::endl;
     }
-    stbi_image_free(gTestModel->data);
+    stbi_image_free(mesh->mModel->data);
 
     // Tell what is what in buffers, start with VERTICES
     glEnableVertexAttribArray(0);
@@ -234,7 +235,7 @@ int FindUniformLocation(GLuint pipeline, const GLchar* name){      // deze funct
     return location;
 }
 
-void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
+void MeshDraw(Mesh3D* mesh) {
 
     glUseProgram(mesh->mPipeline);
 
@@ -270,7 +271,7 @@ void MeshDraw(Mesh3D* mesh, GLsizei vertexcount) {
 
     glBindVertexArray(mesh->mVertexArrayObject); // select/enable VAO
     // glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw using vertexbuffer
-    glDrawArrays(GL_TRIANGLES, 0, vertexcount);
+    glDrawArrays(GL_TRIANGLES, 0, mesh->mModel->mVertexData.size() / 8);
 
     glUseProgram(0);
 }
@@ -401,7 +402,7 @@ void MainLoop() {
         //MeshRotate(&gMesh2, -rotate, glm::vec3{ 0.f,1.f,0.f });
 
         //MeshDraw(&gMesh1, gTestModel->mVertexData.size() / 8);
-        MeshDraw(&gMesh1, gTestModel->mVertexData.size() / 8);
+        MeshDraw(&gMesh1);
         //std::cout << "amount of vertices: " << gTestModel->mVertexAmount << std::endl;
 
         //MeshDraw(&gMesh2);
@@ -418,8 +419,6 @@ void CleanUp() {
     glDeleteVertexArrays(1, &gMesh1.mVertexArrayObject);
 
     glDeleteProgram(gApp.mGraphicsPipelineShaderProgram);
-
-    delete gTestModel;
 
     SDL_Quit();
 }
@@ -445,7 +444,7 @@ int main(int argc, char* argv[])
 
     // assign pipeline to each mesh
     MeshSetPipeline(&gMesh1, gApp.mGraphicsPipelineShaderProgram);
-    MeshSetPipeline(&gMesh2, gApp.mGraphicsPipelineShaderProgram);
+    //MeshSetPipeline(&gMesh2, gApp.mGraphicsPipelineShaderProgram);
 
     MainLoop();
 
