@@ -18,6 +18,8 @@
 #include "stb_image.h"
 #include "Camera.hpp"
 #include "Model.hpp"
+// #include "MeshApp.hpp"
+// #include "shaderprogram.hpp"
 
 // reminder Blender exprts obj w CW winding!
 
@@ -53,14 +55,10 @@ struct Mesh3D {
     } //destructor functie niet nodig vanwege smart pointer.
 };
 
-//std::string     ObjPath = "C:/Users/Samuel/Dropbox/BlenderModels/Cabin/3DModel_LowPoly";
-
 //  Globalz
 App gApp;
-Mesh3D gMesh1("C:/Users/Samuel/Dropbox/BlenderModels/Cabin/3DModel_LowPoly");
-//Mesh3D gMesh2;
-//Model* gTestModel = new Model(ObjPath); // define on heap, bcuz possibly big
-
+Mesh3D gMesh1("C:/Users/Samuel/Dropbox/BlenderModels/MyLoopMan/3DModel_LowPoly");
+Mesh3D gMesh2("C:/Users/Samuel/Dropbox/BlenderModels/MyCloak/3DModel_LowPoly");
 
 void GetOpenGLVersionInfo() {
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
@@ -137,17 +135,6 @@ void MeshCreate(Mesh3D* mesh) {
     for (int i = 0; i < 8; i++) {
         std::cout << mesh->mModel->mVertexData[i] << std::endl;
     }
-    //const std::vector<GLfloat> vertexData{
-    //    -0.5f, -0.5f, 0.0f,   // lower left
-    //    1.0f, 0.0f, 0.0f,
-    //    0.5f, -0.5f, 0.0f,    // lower right
-    //    0.0f, 1.0f, 0.0f,
-    //    -0.5f, 0.5f, 0.0f,    // top left
-    //    0.0f, 0.0f, 1.0f,
-    //    0.5f, 0.5f, 0.0f,  // top right
-    //    0.3f, 0.6f, 0.9f,
-    //};
-        // positions          // colors           // texture coords
 
     // De bind vertex array wrapped eigenlijk om alle andere data heen - vertex, index, en texture data
     glGenVertexArrays(1, &mesh->mVertexArrayObject); // mesh is een  pointer dus members worden als -> gegeven
@@ -169,7 +156,7 @@ void MeshCreate(Mesh3D* mesh) {
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->mIndexBufferObject);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, gTestModel->mIndexBufferData.size() * sizeof(GLuint), gTestModel->mIndexBufferData.data(), GL_STATIC_DRAW);
 
-    // TEXTURE BUFFER
+    // TEXTURE BUFFER (maybe make different function, to loop over different textures)
     std::cout << "texWidth: " << mesh->mModel->texWidth << ", texHeight: " << mesh->mModel->texHeight << ", texNrChannels: " << mesh->mModel->texNrChannels << std::endl;
     glGenTextures(1, &mesh->mTextureObject);
     glActiveTexture(GL_TEXTURE0);
@@ -181,10 +168,10 @@ void MeshCreate(Mesh3D* mesh) {
     if (mesh->mModel->data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mesh->mModel->texWidth, mesh->mModel->texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, mesh->mModel->data);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "Texture loaded" << std::endl;
+        std::cout << "Texture bound" << std::endl;
     }
     else {
-        std::cout << "no texture loaded" << std::endl;
+        std::cout << "no texture bound" << std::endl;
     }
     stbi_image_free(mesh->mModel->data);
 
@@ -209,7 +196,7 @@ void MeshCreate(Mesh3D* mesh) {
     glDisableVertexAttribArray(2);
 }
 
-// hier definieren we de pijpleiding
+// hier associeren we de mesh met een pijpleiding
 void MeshSetPipeline(Mesh3D* mesh, GLuint pipeline) {
     mesh->mPipeline = pipeline;
 }
@@ -265,15 +252,19 @@ void MeshDraw(Mesh3D* mesh) {
     //glUniform1f(location_Time, timeVal);
 
     // TEXTURE AS UNIFORM
+    glActiveTexture(GL_TEXTURE0);  // Activate texture unit 0
+    glBindTexture(GL_TEXTURE_2D, mesh->mTextureObject);  // Bind the mesh-specific texture
     glUniform1i(FindUniformLocation(gApp.mGraphicsPipelineShaderProgram, "uTexture"), 0);
 
     // Draw stuff
 
     glBindVertexArray(mesh->mVertexArrayObject); // select/enable VAO
     // glDrawElements(GL_TRIANGLES, vertexcount, GL_UNSIGNED_INT, 0); // draw using vertexbuffer
+    //std::cout << "how much i will draw: " << mesh->mModel->mVertexData.size() / 8 << std::endl;
     glDrawArrays(GL_TRIANGLES, 0, mesh->mModel->mVertexData.size() / 8);
 
     glUseProgram(0);
+
 }
 
 // functies voor model transformaties
@@ -396,16 +387,15 @@ void MainLoop() {
 
         PreDraw(); // achtergrond en zo
 
-        //static float rotate = 0.1f;
+        static float rotate = 0.1f;
 
         //MeshRotate(&gMesh1, rotate, glm::vec3{ 0.f,1.f,0.f });
-        //MeshRotate(&gMesh2, -rotate, glm::vec3{ 0.f,1.f,0.f });
+        MeshRotate(&gMesh2, rotate, glm::vec3{ 0.f,1.f,0.f });
 
-        //MeshDraw(&gMesh1, gTestModel->mVertexData.size() / 8);
         MeshDraw(&gMesh1);
         //std::cout << "amount of vertices: " << gTestModel->mVertexAmount << std::endl;
 
-        //MeshDraw(&gMesh2);
+        MeshDraw(&gMesh2);
 
         SDL_GL_SwapWindow(gApp.mGraphicsApplicationWindow); // update screen
     }
@@ -428,24 +418,26 @@ int main(int argc, char* argv[])
 {
     InitializeProgram(&gApp);
     //set up camera
-    gApp.mCamera.SetProjectionMatrix(glm::radians(45.0f),(float)gApp.mScreenWidth/ (float)gApp.mScreenHeight,0.1f,100.0f);
+    gApp.mCamera.SetProjectionMatrix(glm::radians(45.0f),(float)gApp.mScreenWidth/ (float)gApp.mScreenHeight,0.1f,1000.0f);
 
     MeshCreate(&gMesh1);
+    MeshCreate(&gMesh2);
 
-    MeshTranslate(&gMesh1, 0.f, 0.f, -1.f);
-    MeshScale(&gMesh1, 1.f, 1.f, 1.f);
+    //MeshTranslate(&gMesh1, 0.f, 0.f, -1.f);
+    //MeshScale(&gMesh1, 1.f, 1.f, 1.f);
 
     //MeshCreate(&gMesh2);
 
-    //MeshTranslate(&gMesh2, 0.f, 0.f, -3.f);
+    MeshTranslate(&gMesh2, 0.f, 0.f, -10.f);
     //MeshScale(&gMesh2, 1.f, 1.f, 1.f);
 
     CreateGraphicsPipeline();
 
     // assign pipeline to each mesh
     MeshSetPipeline(&gMesh1, gApp.mGraphicsPipelineShaderProgram);
-    //MeshSetPipeline(&gMesh2, gApp.mGraphicsPipelineShaderProgram);
-
+    MeshSetPipeline(&gMesh2, gApp.mGraphicsPipelineShaderProgram);
+    std::cout << "Texture ID for gMesh1: " << gMesh1.mTextureObject << std::endl;
+    std::cout << "Texture ID for gMesh2: " << gMesh2.mTextureObject << std::endl;
     MainLoop();
 
     CleanUp();

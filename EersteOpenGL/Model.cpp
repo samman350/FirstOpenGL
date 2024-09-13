@@ -69,5 +69,5 @@ Model::Model(const std::string filename) {
     const std::string filenameTex = filename + mTexExt;
     stbi_set_flip_vertically_on_load(true);
     data = stbi_load(filenameTex.c_str(), &texWidth, &texHeight, &texNrChannels, 0);
-    //std::cout << "texWidth: " << texWidth << ", texHeight: " << texHeight << ", texNrChannels: " << texNrChannels << std::endl;
+    std::cout << filenameTex << " texture loaded, " << "texWidth: " << texWidth << ", texHeight: " << texHeight << ", texNrChannels: " << texNrChannels << std::endl;
 }
